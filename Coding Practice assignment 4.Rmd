@@ -3,13 +3,14 @@ title: "Coding Practice Assignment"
 author: "Karamjit Kaur Baryah"
 date: "2025-02-26"
 output: 
-html_document:
-  toc: true
-  toc_float: true
+  html_document:
+   toc: true
+   toc_float: true
   word_document:
-    pdf_document:
-      md_document:
-        variant:gfm
+  pdf_document:
+  md_document:
+   variant: gfm
+      
       
 ---
 ```{r Install Tinytex, eval=FALSE}
@@ -74,10 +75,29 @@ Content Cell  | Content Cell
 Content Cell  | Content Cell
 
 ```{r}
-kable(head(mtcars, n = 5), digits = 3, format = "markdown")
+kable(head(mtcars, n = 7), digits = 3, format = "markdown")
 ```
-
 
 ## File Tree
 
 - [Coding Pratice 4](Coding Practice assignment 4.Rmd)
+
+```
+├── ClassExampleKim.Rproj          #Top level directort .Rproj file=working directory
+├── Coding Practice assignment 4.Rmd
+├── Coding-Practice-assignment-4.html
+├── Coding-Practice-assignment-4.md     #github formatted markdown
+├── Coding-Practice-assignment-4_files
+│   ├── figure-gfm
+│   │   └── unnamed-chunk-1-1.png
+│   └── figure-html
+├── CottonBoll.jpg
+├── example html.Rmd
+├── example-html.html
+└── README.md    # top level directory README
+```
+#Zenodo link
+[![DOI](https://zenodo.org/badge/924492429.svg)](https://doi.org/10.5281/zenodo.14938995)
+
+
+
