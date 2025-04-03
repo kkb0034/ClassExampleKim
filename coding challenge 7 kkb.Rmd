@@ -1,0 +1,125 @@
+---
+title: "Linear Model coding challenge"
+author: "Karamjit Baryah and Prativa Chhetri"
+date: "2025-04-03"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+Plant.Emer=read.csv("PlantEmergence.csv")
+```
+
+```{r}
+library(tidyverse)
+library(lme4)
+library(emmeans)
+library(multcomp)
+library(multcompView)
+```
+
+```{r}
+Plant.Emer$Treatment <- as.factor(Plant.Emer$Treatment)
+Plant.Emer$DaysAfterPlanting <- as.factor(Plant.Emer$DaysAfterPlanting)
+Plant.Emer$Rep <- as.factor(Plant.Emer$Rep)
+```
+
+```{r}
+str(Plant.Emer)
+```
+```{r}
+lm_model <- lm(Emergence ~ Treatment * DaysAfterPlanting, data = Plant.Emer)
+
+```
+
+```{r}
+summary(lm_model)
+```
+
+```{r}
+anova_results <- anova(lm_model)
+print(anova_results)
+```
+
+```{r}
+# Fit the simplified linear model (without interaction)
+lm_model_simplified <- lm(Emergence ~ Treatment + DaysAfterPlanting, data = Plant.Emer)
+```
+
+```{r}
+# Summary of the simplified model
+summary(lm_model_simplified)
+
+```
+
+```{r}
+# ANOVA results
+anova_results_simplified <- anova(lm_model_simplified)
+print(anova_results_simplified)
+```
+
+
+```{r}
+# Compute least squares means for Treatment
+lsmeans_treatment <- emmeans(lm_model_simplified, ~ Treatment)
+print(lsmeans_treatment)
+```
+
+```{r}
+# Perform Tukey's multiple comparisons
+tukey_results <- pairs(lsmeans_treatment, adjust = "tukey")
+print(tukey_results)
+```
+
+
+```{r}
+# Generate compact letter display for Treatment
+cld_results <- cld(lsmeans_treatment, Letters = letters)
+print(cld_results)
+```
+
+```{r}
+plot_cldbars_onefactor <- function(lm_model, factor) {
+  data <- lm_model$model
+  variables <- colnames(lm_model$model)
+  dependent_var <- variables[1]
+  independent_var <- variables[2:length(variables)]
+
+  lsmeans <- emmeans(lm_model, as.formula(paste("~", factor))) # estimate lsmeans 
+  Results_lsmeans <- cld(lsmeans, alpha = 0.05, reversed = TRUE, details = TRUE, Letters = letters) # contrast with Tukey adjustment by default.
+  
+  # Extracting the letters for the bars
+  sig.diff.letters <- data.frame(Results_lsmeans$emmeans[,1], 
+                                 str_trim(Results_lsmeans$emmeans[,7]))
+  colnames(sig.diff.letters) <- c(factor, "Letters")
+  
+  # for plotting with letters from significance test
+  ave_stand2 <- lm_model$model %>%
+    group_by(!!sym(factor)) %>%
+    dplyr::summarize(
+      ave.emerge = mean(.data[[dependent_var]], na.rm = TRUE),
+      se = sd(.data[[dependent_var]]) / sqrt(n())
+    ) %>%
+    left_join(sig.diff.letters, by = factor) %>%
+    mutate(letter_position = ave.emerge + 10 * se)
+  
+  plot <- ggplot(data, aes(x = !! sym(factor), y = !! sym(dependent_var))) + 
+    stat_summary(fun = mean, geom = "bar") +
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.5) +
+    ylab("Number of emerged plants") + 
+    geom_jitter(width = 0.02, alpha = 0.5) +
+    geom_text(data = ave_stand2, aes(label = Letters, y = letter_position), size = 5) +
+    xlab(as.character(factor)) +
+    theme_classic()
+  
+  return(plot)
+}
+
+```
+
+```{r}
+# Generate the plot for Treatment
+plot_cldbars_onefactor(lm_model_simplified, "Treatment")
+
+```
